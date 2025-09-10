@@ -1,0 +1,54 @@
+🧩 Crypto CTF Cheatsheet – Decision Tree
+1. Cek tipe soal dulu
+🔑 RSA / Public Key Crypto → biasanya ada n, e, c (ciphertext).
+🔒 AES / Symmetric Crypto → biasanya ada key, iv, ciphertext (panjang kelipatan 16).
+🔡 Encoding / Misc → biasanya cuma string aneh (base64, hex, rot13, dsb).
+
+2. Kalau RSA
+Dikasih: n, e, c
+* Cek kondisi:
+e kecil (e=3 atau 5), ciphertext dari banyak modulus
+→ gunakan Hastad’s Broadcast Attack (CRT + root).
+
+2 ciphertext berbeda, modulus sama, e sama
+→ gunakan Common Modulus Attack.
+
+2 ciphertext berbeda, modulus beda, e sama, gcd(n1,n2) != 1
+→ gunakan Shared Prime Attack (faktor pakai gcd).
+
+dikasih p dan q
+→ langsung hitung φ, d = inverse(e, φ), lalu m = pow(c, d, n).
+
+hanya dikasih n kecil (misal < 100 bit)
+→ brute force faktorisasi n.
+
+kalau ciphertext hasil pow(m,e,n) dan kecil < n
+→ bisa langsung ambil akar e dari c.
+
+3. Kalau AES
+Dikasih: ciphertext panjang (base64/hex)
+➡️ Cek mode:
+Kalau ada iv → biasanya CBC.
+Kalau tidak ada iv, block 16 byte, mirip → ECB.
+Kalau ada nonce/counter → CTR.
+
+➡️ Cara solve:
+ECB: dekripsi langsung block by block.
+CBC: dekripsi pakai iv + kunci.
+CTR: dekripsi pakai XOR dengan keystream.
+Kadang key disembunyikan (misal hasil RSA) → gabungkan exploit RSA untuk dapat AES key.
+
+4. Kalau Encoding / Misc
+String berakhiran == → hampir pasti Base64.
+Banyak angka 0-255 → mungkin ASCII codes.
+Hex string (0-9a-f) → Hex decode.
+Huruf aneh tapi readable → coba ROT13 / Caesar.
+Panjang kelipatan 5 dengan titik/spasi → Bacon cipher.
+Panjang kelipatan 2, hanya angka 0/1 → Binary.
+
+5. Checklist alur solve
+Apakah ada n, e, c → cek RSA attack.
+Apakah ada key/iv/ciphertext → cek AES mode.
+Apakah string readable aneh (hex/b64/rot13) → coba decode.
+Kalau ada banyak ciphertext/modulus → pikirkan CRT atau gcd.
+Kalau ada satu ciphertext dan e kecil → coba akarkan langsung.
